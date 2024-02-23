@@ -1,6 +1,5 @@
 # redis-pagination
-
-#### redis-pagination 是基于redis实现的数据列表存储，支持分页、排序功能
+redis-pagination 是基于redis实现的数据列表存储，支持分页、排序功能
 
 ### 安装
 ```shell
