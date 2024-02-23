@@ -2,19 +2,18 @@
 
 #### redis-pagination 是基于redis实现的数据列表存储，支持分页、排序功能
 
-### install
+### 安装
 ```shell
 go get github.com/jerry-hms/redis-pagination
 ```
 
 ### 使用示例
-#### 存储示例：
+#### 调用存储
 ```go
 package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/jerry-hms/redis-pagination"
 )
@@ -48,12 +47,12 @@ func main() {
 	}
 	err = db.SetHashField("your_hash_field").Store(user)
 	if err != nil {
-		// 失败
+		// fail
 	}
-	// 成功
+	// success
 }
 ```
-#### 获取分页数据示例：
+#### 获取分页数据
 ```go
 func main() {
 	db := NewHashDB(&redis.Options{
@@ -66,6 +65,6 @@ func main() {
 	if err != nil {
 		// ...
 	}
-	fmt.Printf("获取到数据:%+v\n", result)
+	fmt.Printf("result:%+v\n", result)
 }
 ```
