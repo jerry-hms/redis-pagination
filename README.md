@@ -14,7 +14,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/go-redis/redis/v8"
-	"github.com/jerry-hms/redis-pagination"
+	rp "github.com/jerry-hms/redis-pagination"
 )
 
 type User struct {
@@ -32,7 +32,7 @@ func (u *User) UnmarshalBinary(data []byte) error {
 }
 
 func main() {
-	db := NewHashDB(&redis.Options{
+	db := rp.NewHashDB(&redis.Options{
 		Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
