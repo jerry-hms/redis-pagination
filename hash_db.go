@@ -92,6 +92,20 @@ return true
 	return err
 }
 
+// First 查询一条数据
+func (d *HashDb) First() (string, error) {
+	hashTable, err := d.GetHashTable()
+	if err != nil {
+		return "", err
+	}
+	field, err := d.GetHashField()
+	if err != nil {
+		return "", err
+	}
+	result, _ := d.rdb.HGet(context.Background(), hashTable, field).Result()
+	return result, nil
+}
+
 // Paginate 分页获取数据
 func (d *HashDb) Paginate(page int, limit int, sort string) (*Pagination, error) {
 	var rows, keys []string
@@ -118,6 +132,38 @@ func (d *HashDb) Paginate(page int, limit int, sort string) (*Pagination, error)
 	}
 	paginate.Rows = rows
 	return paginate, nil
+}
+
+// Del 删除数据
+func (d *HashDb) Del() error {
+	delScript := redis.NewScript(`
+local hashTable = KEYS[1]
+local field = ARGV[1]
+local jsonStr = ARGV[2]
+
+-- 检查字段是否存在
+local exists = redis.call('hexists', hashTable, field)
+if exists == 1 then
+    -- 字段存在执行删除
+	redis.call('hdel', hashTable, field)
+    redis.call('zrem', hashTable .. ':sort', field)
+end
+return true
+`)
+	hashTable, err := d.GetHashTable()
+	if err != nil {
+		return err
+	}
+	field, err := d.GetHashField()
+	if err != nil {
+		return err
+	}
+
+	err = delScript.Run(context.Background(), d.rdb, []string{hashTable}, field).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetSortKey 获取排序key

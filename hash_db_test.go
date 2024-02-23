@@ -21,13 +21,15 @@ func (u *User) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, u)
 }
 
-func TestHashDb_Store(t *testing.T) {
-	db := NewHashDB(&redis.Options{
+func getDb() *HashDb {
+	return NewHashDB(&redis.Options{
 		Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
 	}).SetHashTable("test")
+}
 
+func TestHashDb_Store(t *testing.T) {
 	var err error
 	count := 50
 	for i := 0; i < count; i++ {
@@ -36,7 +38,7 @@ func TestHashDb_Store(t *testing.T) {
 			Name:  fmt.Sprintf("%s%d", "user", i),
 			Phone: "13888888888",
 		}
-		err = db.SetHashField(fmt.Sprint("field", i)).Store(user)
+		err = getDb().SetHashField(fmt.Sprint("field", i)).Store(user)
 		if err != nil {
 			t.Fatal("Store() 插入失败:", err)
 		}
@@ -44,17 +46,31 @@ func TestHashDb_Store(t *testing.T) {
 }
 
 func TestHashDb_Paginate(t *testing.T) {
-	db := NewHashDB(&redis.Options{
-		Addr:     "127.0.0.1:6379",
-		Password: "",
-		DB:       0,
-	}).SetHashTable("test")
 	count := 10
-	paginate, err := db.Paginate(1, count, "desc")
+	paginate, err := getDb().Paginate(1, count, "desc")
 	if err != nil {
 		t.Fatal("Paginate() 获取数据出错:", err)
 	}
 	if count != len(paginate.Rows) {
 		t.Fatal("Paginate() 获取数据条数与期望不符")
+	}
+}
+
+func TestHashDb_First(t *testing.T) {
+	trueStr := `{"id":1,"name":"user1","phone":"13888888888"}`
+	first, err := getDb().SetHashField("field1").First()
+	if err != nil {
+		t.Fatal("First() 获取数据出错:", err)
+	}
+
+	if trueStr != first {
+		t.Fatal("First() 结果与期望不符")
+	}
+}
+
+func TestHashDb_Del(t *testing.T) {
+	err := getDb().SetHashField("field1").Del()
+	if err != nil {
+		t.Fatal("Del() 删除数据出错", err)
 	}
 }
