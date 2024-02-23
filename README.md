@@ -7,7 +7,65 @@
 go get github.com/jerry-hms/redis-pagination
 ```
 
-### example
+### 使用示例
+#### 存储示例：
 ```go
+package main
 
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/go-redis/redis/v8"
+	"github.com/jerry-hms/redis-pagination"
+)
+
+type User struct {
+	ID    int    `redis:"id" json:"id"`
+	Name  string `redis:"name" json:"name"`
+	Age   int `redis:"age" json:"age"`
+}
+
+func (u *User) MarshalBinary() ([]byte, error) {
+	return json.Marshal(u)
+}
+
+func (u *User) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, u)
+}
+
+func main() {
+	db := NewHashDB(&redis.Options{
+		Addr:     "127.0.0.1:6379",
+		Password: "",
+		DB:       0,
+	}).SetHashTable("your_hash_key")
+
+	var err error
+	user := &User{
+		ID:   1,
+		Name: "jerry",
+		Age:  18,
+	}
+	err = db.SetHashField("your_hash_field").Store(user)
+	if err != nil {
+		// 失败
+	}
+	// 成功
+}
+```
+#### 获取分页数据示例：
+```go
+func main() {
+	db := NewHashDB(&redis.Options{
+		Addr:     "127.0.0.1:6379",
+		Password: "",
+		DB:       0,
+	}).SetHashTable("your_hash_key")
+
+	result, err = db.Paginate(1, 10, "desc")
+	if err != nil {
+		// ...
+	}
+	fmt.Printf("获取到数据:%+v\n", result)
+}
 ```
